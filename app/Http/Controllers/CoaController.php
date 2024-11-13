@@ -13,7 +13,9 @@ class CoaController extends Controller
      */
     public function index()
     {
-        //
+        $coa = Coa::all();
+
+        return view('coa.index', compact('coa'));
     }
 
     /**
@@ -21,7 +23,7 @@ class CoaController extends Controller
      */
     public function create()
     {
-        //
+        return view('coa.create')->render();  
     }
 
     /**
@@ -30,6 +32,17 @@ class CoaController extends Controller
     public function store(Request $request)
     {
         //
+    }
+
+    public function editForm(Request $request)
+    {
+        $id = $request->id;
+        $data = Coa::find($id);
+
+        return response()->json(array(
+            'status' => 'oke',
+            'msg' => view('coa.edit', compact('data'))->render()
+        ), 200);
     }
 
     /**

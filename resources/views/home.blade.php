@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.kaiadmin')
 
 @section('content')
 <div class="container">
