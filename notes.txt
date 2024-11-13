@@ -1,0 +1,364 @@
+// RUN LARAVEL
+php artisan serve
+
+// Make CONTROLLER and MODEL at the same time :)
+php artisan make:controller UserController --resource --model=User
+
+NOTES TO DO:
+
+04/11/24
+1. Bikin Login
+2. Setting installasi awal
+    - Admin
+    - Site
+    - Semester
+    - Grading
+
+==========================================================================================================================
+BAB 2 - ROUTING
+==========================================================================================================================
+
+- web.php ada di routes
+- .blade.php ada di resources -:> views
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('/', function () {
+    return 'Hey dummy!';
+});
+
+// html, nama view
+Route::view('profile', 'welcome');
+
+// wajib
+Route::('/user/{id}, fucntion($name){return 'User '.$name;}); 
+Route::get('/user/{id}', function ($name) { 
+    return 'User '.$name;
+});
+
+// opsional
+Route::('/user/{id?}, fucntion($name='Feesh'){return 'User '.$name;});
+Route::get('/user/{id?}', function ($name='Feesh') { 
+    return 'User '.$name;
+});
+
+Route::get('/promo', function () {
+    abort(404);
+});
+
+Route::get('/promo/{promo}', function ($promo) { // wajib
+    if($promo == 'Promo-Ramadhan'){
+        return view('promo', ['promo' => $promo]);
+    }
+    else{
+        abort(404);
+    }
+});
+
+Route::get('greeting', function(){
+    return view('welcome', ['name' => 'Samantha']);
+});
+
+// PADA FILE BLADE
+Hello, {{ $name }}
+
+@if(count($records) === 1)
+    I have one record!
+@elseif(count($records) > 1)
+    I have multiple records!
+@else
+    I don't have any records!
+@endif
+
+@for($i = 0; $i < 10; $i++)
+    The current value is {{$i}}
+@endfor
+
+@foreach($users as $user)
+    <p>The is user {{ $user->id }}</p>
+@endfor
+
+@forelse($users as $user)
+@empty
+@endforelse
+
+@while (true)
+@endwhile
+
+==========================================================================================================================
+BAB 3 - DATABASE
+==========================================================================================================================
+
+Ubah database pada .env
+
+DB_DATABASE=laravel
+DB_USERNAME=root
+DB_PASSWORD=
+
+MIGRATIONS
+- berada pada /database/migrations
+
+- CHECK PPT SLIDE 35 FOR DATA TYPES
+
+// php artisan make:migration create_users_table   -> create
+// php artisan migrate                              -> run
+// php artisan rollback                             -> undo
+// php artisan migrate:status                       -> status
+
+// Schema::create
+// Schema::table
+// Schema::dropIfExists
+
+// MAIN TABLE
+Schema::create('users', function (Blueprint $table) {
+            $table->id(); // automatic
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            $table->rememberToken();
+            $table->timestamps(); // creates created_at updated_at
+        });
+
+Schema::dropIfExists('users');
+
+// COLUMNS
+public function up(): void
+    {
+        Schema::table('hotels', function (Blueprint $table) {
+            $table->string('partner_reference');
+            $table->string('name');
+            $table->string('address');
+            $table->string('postcode');
+            $table->string('city');
+            $table->string('state');
+            $table->string('country_id');
+            $table->double('longtitude', 8, 3);
+            $table->double('latitude', 8, 3);
+            $table->string('phone')->nullable();
+            $table->string('fax')->nullable();
+            $table->string('email')->nullable();
+            $table->string('currency');
+            $table->string('accomodation');
+            $table->tinyInteger('category');
+            $table->string('web');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('hotels', function (Blueprint $table){
+            $table->dropColumn(['name', 'address', 'postcode', 'city', 'state', 'country', 'country_id', 'longtitude', 'latitude', 'phone', 'fax', 'email', 'currency', 'accomodation', 'category', 'web']);
+        });
+    }
+
+// FOREIGN RELATIONSHIP
+
+Schema::table('hotels', function (Blueprint $table) {
+            $table->unsignedBigInteger('type_id'); // adds type_id
+            $table->foreign('type_id')->references('id')->on('types'); // connects it to types
+        });  
+
+        public function down(): void
+    {
+        Schema::table('hotels', function (Blueprint $table) {
+            $table->dropForeign(['type_id']);
+            $table->dropColumn(['type_id']);
+        });  
+    }
+
+==========================================================================================================================
+
+// SEEDERS
+// php artisan make:seeder UserSeeder               -> seeds
+// php artisan db:seed
+
+public function run(): void{
+    DB::table('products')->insert([
+        'name' => Str::random(10),
+        'email' => Str::random(10).'gmail.com',
+        'password' => Hash::make('password');
+    ]);
+}
+
+
+public function run(): void
+    {
+        $faker = Faker::create();
+
+        $hotelID = DB::table('hotels')->pluck('id');
+
+        // data member: id i, name s, desc s, capacity ti, size d, price d, view e, 
+        // hasToilet b, hasWifi b, smokeFree b, hotel_id fk
+        DB::table('products')->insert([
+            'name' => $faker->words(5, true),
+            'desc' => $faker->sentence(5),
+            'capacity' => random_int(1, 5),
+            'size' => $faker->randomFloat(2, 30, 90), // anggap saja m^2
+            'price' => $faker->random_int(1000000, 90000000),
+            'view' => $faker->randomElement(['Pool View', 'Balcony Terrace']),
+            'hasToilet' => $faker->boolean,
+            'hasWifi' => $faker->boolean,
+            'smokeFree' => $faker->boolean,
+            'hotel_id' => $faker->randomElement($hotelID)
+        ]);
+    }
+
+public function run(): void
+    {
+        $faker = Faker::create();
+
+        $hotelID = DB::table('hotels')->pluck('id');
+
+        // data member: id i, name s, desc s, capacity ti, size d, price d, view e, 
+        // hasToilet b, hasWifi b, smokeFree b, hotel_id fk
+
+        for ($i = 0; $i < 5; $i++) {
+            DB::table('products')->insert([
+                'name' => $faker->words(5, true),
+                'price' => random_int(1000000, 90000000),
+                'created_at' => date("Y-m-d H:i:s"),
+                'updated_at' => now(),
+                'desc' => $faker->sentence(5),
+                'capacity' => random_int(1, 5),
+                'size' => $faker->randomFloat(2, 30, 90), // anggap saja m^2
+                'view' => $faker->randomElement(['Pool View', 'Balcony Terrace']),
+                'hasToilet' => $faker->boolean,
+                'hasWifi' => $faker->boolean,
+                'smokeFree' => $faker->boolean,
+                'hotel_id' => $faker->randomElement($hotelID)
+            ]);
+        }
+
+    }
+
+    public function run(): void
+    {
+        DB::table('types')->insert([
+            ['name' => 'Inn', 'created_at' => now(), 'updated_at' => now()],
+            ['name' => 'Resort', 'created_at' => now(), 'updated_at' => now()],
+        ]);
+    }
+
+==========================================================================================================================
+BAB 4 - QUERY ON THE CONTROLLER
+==========================================================================================================================
+
+3 types of syntax:
+
+1. Raw Queries
+
+2. Query Builder
+
+3. Elequent ORM
+
+CONTROLLERS 
+- Ada di App/Http/Controllers
+- CASE SENSITIVE!!!
+
+Route::resources([
+    'hotel' => HotelController::class,
+    'type' => TypeController::class,
+    'product' => ProductController::class,
+]);
+
+// php artisan 
+// php artisan cache:clear
+// php artisan route:cache
+// php artisan optimize
+// php artisan route:list
+// php artisan make:model hotel
+// php artisan make:controller ProductsController --resource
+// php artisan make:controller ProductsController --resource --model=<ModelName, ex: Product>
+
+DON'T FORGET:
+import stuff DB and classes involved
+use DB;
+use App\Models\hotel;
+use App\Models\product;
+
+MODEL
+
+1 product terhubung ke 1 hotel (product.php)
+public function hotel(){
+        return $this->belongsTo(Hotel::class, "hotel_id");
+        // agar saat mau inner join bisa anak panah langsung uwieee
+    }
+
+1 hotel pny banyak prod (hotel.php)
+public function products():HasMany{
+        return $this->hasMany(Product::class);
+    }
+
+View
+create specific ones on resources -> views -> folder name -> file ex: index.blade.php
+
+public function show($hotelID)
+    {
+        $hotel = hotel::where("id", $hotelID)->get();
+        $product = product::where('hotel_id', $hotelID)->get();
+        //dd($hotel, $product);
+        return view("hotel.show", ['hotel' => $hotel, 'datas' => $product]);
+    }
+
+    public function availableHotelRoom(){
+        $data = Hotel::leftJoin('products as p', 'hotels.id', '=', 'p.hotel_id')
+                ->select('hotels.id', 'hotels.name', DB::raw('IFNULL(sum(p.available_rooms), 0) room'))
+                ->groupBy('hotels.id', 'hotels.name')
+                ->get();
+        //dd($data);
+        return view('hotel.availableRoom', compact('data'));
+    }
+
+    public function avgPriceByHotel(){
+    // RAW QUERY
+        $data = DB::select("SELECT t.name typeName, h.name hotelName, IFNULL(AVG(p.price), 'No Products yet!') avgPrice FROM hotels h 
+        LEFT JOIN types t 
+             ON h.type_id = t.id 
+         LEFT JOIN products p 
+             ON h.id = p.hotel_id
+         GROUP BY t.name, h.name
+         ORDER BY h.name ASC;");
+    }
+
+    public function avgPriceByHotel(){
+    // ELOQUENT QUERY
+        $data = Hotel::leftJoin('types as t', 'hotels.type_id', '=', 't.id')
+        -> leftJoin('products as p', 'hotels.id', '=', 'p.hotel_id')
+        ->select('t.name as typeName', 'hotels.name as hotelName', DB::raw('IFNULL(AVG(p.price), "No Products yet!") avgPrice'))
+        ->groupBy('typeName', 'hotelName')
+        ->get();
+        // CATATAN: kalau bukan SQL Raw, butuh AS.
+
+        //dd($data);
+        return view('hotel.averageRoom', compact('data'));
+    }
+
+==========================================================================================================================
+BAB 5 - RELATIONSHIP
+==========================================================================================================================
+
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+ALL IN MODEL
+protected $table = "hotels"; // ini gunanya untuk overide database agar bisa di baca
+
+// has connection to someone
+public function user(): BelongsTo
+{
+    return $this->belongsTo(User::class, 'user_id');
+}
+
+public function transactions(): HasMany
+{
+     return $this->hasMany(Transaction::class,'customer_id','id');
+}
+
+public function products(): BelongsToMany
+{
+    return $this->belongsToMany(Product::class, 'Product_transaction', 'transaction_id', 'product_id')->withPivot('checkin_date', 'duration', 'subtotal'); // hotel_id untuk merujuk pada id hotel yang akan di tuju
+}
